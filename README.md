@@ -201,3 +201,4 @@ steps:
 # Test commits for release
 
 feat: New feature
+fix: Fix bug
