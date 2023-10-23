@@ -1,18 +1,45 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Turbo Monorepo Release Action'
+description: |
+  Creates a GitHub release from a commit range.
+  Filters the commit range by two criteria:
+
+  1. The commits must match conventional commit format
+  2. The commits must trigger a turbo build for the workspace
+
+  Commit range is start (exclusive) to end (inclusive).
+  The first commit should be the commit preceding the first commit in the release.
+author: 'Adventure Tech AS'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  github-token:
+    description: 'A github token used to create the release'
     required: true
-    default: '1000'
+  prefix:
+    description: 'The prefix of the release tag (e.g. my-app)'
+    required: false
+    default: ''
+  workspace:
+    description: 'The turbo workspace name used to filter commits, (e.g. my-app)'
+    required: true
+  from:
+    description: 'Commit marking start of release (exclusive)'
+    required: true
+  to:
+    description: 'Last commit in the release'
+    required: true
+  branch:
+    description: 'The branch to create the release from'
+    required: false
 
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  release-url:
+    description: 'The GitHub release URL for the created release'
+  release-title:
+    description: 'The release title for the created release'
+  release-body:
+    description: 'The release body for the created release'
 
 runs:
   using: node20
