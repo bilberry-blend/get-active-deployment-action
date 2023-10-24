@@ -1,0 +1,53 @@
+on:
+  - deployment_status
+# Release job:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    permissions:
+      contents: write
+    if: ${{ startsWith(github.event.deployment.environment, 'production-') && github.event.deployment_status.state == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find name of workspace from environment
+        id: get-workspace
+        run: |
+          workspace=$(echo ${{ github.event.deployment.environment }} | cut -d '-' -f 2-)
+          echo "workspace=$workspace" >> "$GITHUB_OUTPUT"
+
+      - uses: octokit/request-action@v2.x
+        id: get-previous-deployment
+        with:
+          route: GET /repos/{owner}/{repo}/deployments
+          # Query parameters are reported as invalid, but they do work in octokit/request-action
+          # Validating wildcard inputs is currently not supported by github actions, but they work
+          environment: ${{ github.event.deployment.environment }}
+          per_page: 1
+          page: 2
+          owner: ${{ github.repository_owner }}
+          repo: <your-repo> # No context for this, so you need to hardcode it
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release
+        uses: go-fjords/turbo-monorepo-release-action@main
+        id: create-release
+        with:
+          # We need the token with write permissions to do git operations and create the release
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # The name of the turbo/pnpm workspace to check for changes
+          workspace: ${{ steps.get-workspace.outputs.workspace }}
+          # The prefix is used to create the release title
+          prefix: ${{ github.event.deployment.environment }}
+          # Get the start commit for the release (exclusive, not part of the release)
+          from: ${{ steps.get-previous-deployment.outputs.data[0].sha }}
+          # Get the final commit for the release (inclusive, part of the release)
+          to: ${{ github.event.deployment.ref }}
+
+      - name: Print release URL
+        run: echo ${{ steps.create-release.outputs.release-url }}

@@ -13,18 +13,6 @@ They are grouped by type (fix, feat, etc) and a release is created using the
 GitHub API. The release content is set as action output, so it can be used in
 subsequent steps.
 
-## Pre-requisites
-
-You need to have setup node and npx in your workflow before using this action.
-
-```yaml
-steps:
-  - name: Setup node
-    uses: actions/setup-node@v2
-    with:
-      node-version: '20'
-```
-
 ## Inputs
 
 | Name           | Description                          | Required | Default |
@@ -45,8 +33,12 @@ steps:
 
 ## Example usage
 
+See a simple example below that illustrates how to use this action.
+For more advanced examples, see the [example-workflows](./example-workflows) directory.
+
 ```yaml
-on: [deployment]
+on:
+  - deployment_status
 # Release job:
 jobs:
   deploy:
@@ -54,6 +46,7 @@ jobs:
     name: Deploy
     permissions:
       contents: write
+    if: ${{ startsWith(github.event.deployment.environment, 'production-') && github.event.deployment_status.state == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
