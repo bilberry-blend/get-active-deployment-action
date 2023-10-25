@@ -68,3 +68,52 @@ jobs:
       - name: Print release URL
         run: echo ${{ steps.create-release.outputs.release-url }}
 ```
+
+## Example release body output
+
+The release body is generated from the commit messages in the range.
+
+```markdown
+👷 **build**
+
+- Bump actions/setup-node from 2 to 4 (#12)
+
+
+📝 **docs**
+
+- Improve documentation (#13)
+```
+
+## Development
+
+Node v20 or later is recommended.
+
+```bash
+npm install
+npm run all
+```
+
+You should run the action locally using [act](https://github.com/nektos/act).
+This allows you to test the action in a simulated GitHub workflow before pushing a PR.
+act requires Docker to be installed.
+
+```bash
+# List available workflow jobs to run
+act -l
+
+# Run the test-action job to run the action locally
+act -j test-action -s GITHUB_TOKEN="$(gh auth token)"
+```
+
+This will run the action locally using the `test-action` job defined in the [test.yml](./.github/workflows/ci.yml) workflow.
+If you don't have write access to the original repository, you can fork it and run the action from your fork instead.
+If you do not, the action will error out when it tries to create the release.
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for information on how to contribute to this project.
+
+## License
+
+See [LICENSE](./LICENSE) for information on the license for this project.
+In short, this project is licensed under the MIT license.
