@@ -50,4 +50,5 @@ jobs:
           to: ${{ github.event.deployment.ref }}
 
       - name: Print release URL
+        if: steps.test-action.outputs.released
         run: echo ${{ steps.create-release.outputs.release-url }}

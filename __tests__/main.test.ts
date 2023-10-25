@@ -102,20 +102,22 @@ describe('action', () => {
     await main.run()
     expect(runMock).toHaveReturned()
 
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', true)
+
     expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
+      2,
       'release-url',
       expect.stringMatching('https://example.com')
     )
 
     expect(setOutputMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       'release-title',
       expect.stringMatching('test release')
     )
 
     expect(setOutputMock).toHaveBeenNthCalledWith(
-      3,
+      4,
       'release-body',
       expect.stringMatching('test release body')
     )
@@ -132,6 +134,7 @@ describe('action', () => {
 
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Failed to get git log')
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', false)
   })
 
   it('sets a failed status if createRelease fails', async () => {
@@ -145,5 +148,34 @@ describe('action', () => {
 
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Failed to create release')
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', false)
+  })
+
+  it('returns early if no relevant commits are found', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    gitLogMock.mockImplementation(async () => {
+      return Promise.resolve([
+        {
+          sha: '2345678901',
+          message: 'test commit'
+        },
+        {
+          sha: '1234567890',
+          message: 'test commit'
+        }
+      ])
+    })
+
+    processCommitsMock.mockImplementation(async () => {
+      return Promise.resolve([])
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+    expect(setOutputMock.mock.calls.length).toBe(1)
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', false)
+    expect(createReleaseMock.mock.calls.length).toBe(0)
   })
 })

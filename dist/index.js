@@ -52610,6 +52610,11 @@ async function run() {
             core.info(`${commit.sha} - ${commit.message}`);
         }
         core.endGroup();
+        if (relevantCommits.length === 0) {
+            core.warning('No relevant commits found, exiting');
+            core.setOutput('released', false);
+            return;
+        }
         const metadataList = (0, helpers_1.commitsToMetadata)(relevantCommits);
         const groupedMetadata = (0, helpers_1.groupCommits)(metadataList);
         core.startGroup('Grouped metadata');
@@ -52626,14 +52631,20 @@ async function run() {
         // Create a release
         const release = await (0, helpers_1.createRelease)(octokit, github.context, releaseTitle, releaseBody);
         // Add release URL as an output
+        core.setOutput('released', true);
         core.setOutput('release-url', release.html_url);
         core.setOutput('release-title', release.name);
         core.setOutput('release-body', release.body);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
+        core.setOutput('released', false);
+        if (error instanceof Error) {
             core.setFailed(error.message);
+        }
+        else {
+            core.setFailed('An unknown error occurred');
+        }
     }
     finally {
         if (originalBranch !== '') {

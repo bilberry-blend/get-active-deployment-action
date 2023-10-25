@@ -85,12 +85,15 @@ jobs:
 
       - name: Print URL
         id: output-url
+        if: steps.test-action.outputs.released
         run: echo "${{ steps.test-action.outputs.release-url }}"
 
       - name: Print title
         id: output-title
+        if: steps.test-action.outputs.released
         run: echo "${{ steps.test-action.outputs.release-title }}"
 
       - name: Print body
         id: output-body
+        if: steps.test-action.outputs.released
         run: echo "${{ steps.test-action.outputs.release-body }}"

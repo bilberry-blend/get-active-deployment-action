@@ -25,16 +25,17 @@ subsequent steps.
 
 ## Outputs
 
-| Name            | Description           |
-| --------------- | --------------------- |
-| `release-title` | Release title         |
-| `release-body`  | Release description   |
-| `release-url`   | Release URL to GitHub |
+| Name            | Description              |
+| --------------- | ------------------------ |
+| `released`      | If a release was created |
+| `release-title` | Release title            |
+| `release-body`  | Release description      |
+| `release-url`   | Release URL to GitHub    |
 
 ## Example usage
 
-See a simple example below that illustrates how to use this action.
-For more advanced examples, see the [example-workflows](./example-workflows) directory.
+See a simple example below that illustrates how to use this action. For more
+advanced examples, see the [example-workflows](./example-workflows) directory.
 
 ```yaml
 on:
@@ -46,7 +47,9 @@ jobs:
     name: Deploy
     permissions:
       contents: write
-    if: ${{ startsWith(github.event.deployment.environment, 'production-') && github.event.deployment_status.state == 'success' }}
+    if:
+      ${{ startsWith(github.event.deployment.environment, 'production-') &&
+      github.event.deployment_status.state == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,7 +81,6 @@ The release body is generated from the commit messages in the range.
 
 - Bump actions/setup-node from 2 to 4 (#12)
 
-
 📝 **docs**
 
 - Improve documentation (#13)
@@ -94,8 +96,8 @@ npm run all
 ```
 
 You should run the action locally using [act](https://github.com/nektos/act).
-This allows you to test the action in a simulated GitHub workflow before pushing a PR.
-act requires Docker to be installed.
+This allows you to test the action in a simulated GitHub workflow before pushing
+a PR. act requires Docker to be installed.
 
 ```bash
 # List available workflow jobs to run
@@ -105,15 +107,18 @@ act -l
 act -j test-action -s GITHUB_TOKEN="$(gh auth token)"
 ```
 
-This will run the action locally using the `test-action` job defined in the [test.yml](./.github/workflows/ci.yml) workflow.
-If you don't have write access to the original repository, you can fork it and run the action from your fork instead.
-If you do not, the action will error out when it tries to create the release.
+This will run the action locally using the `test-action` job defined in the
+[test.yml](./.github/workflows/ci.yml) workflow. If you don't have write access
+to the original repository, you can fork it and run the action from your fork
+instead. If you do not, the action will error out when it tries to create the
+release.
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for information on how to contribute to this project.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for information on how to contribute to
+this project.
 
 ## License
 
-See [LICENSE](./LICENSE) for information on the license for this project.
-In short, this project is licensed under the MIT license.
+See [LICENSE](./LICENSE) for information on the license for this project. In
+short, this project is licensed under the MIT license.

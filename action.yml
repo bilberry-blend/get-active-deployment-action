@@ -34,6 +34,8 @@ inputs:
 
 # Define your outputs here.
 outputs:
+  released:
+    description: 'Whether a release was created'
   release-url:
     description: 'The GitHub release URL for the created release'
   release-title:
