@@ -1,9 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
-import {
-  fetchDeploymentStatus,
-  getDeploymentById
-} from './helpers'
+import { fetchDeploymentStatus, getDeploymentById } from './helpers'
 
 /**
  * The main function for the action.
@@ -14,9 +11,9 @@ export async function run(): Promise<void> {
     // Get some initial context and inputs necessary for the action
     const environment: string = core.getInput('environment', { required: true })
     const token: string = core.getInput('github-token', { required: true })
-    const nth = core.getInput('nth') || '1'
-    const owner = core.getInput('owner') || github.context.repo.owner
-    const repo = core.getInput('repo') || github.context.repo.repo
+    const nth = core.getInput('nth', { required: true })
+    const owner = core.getInput('owner', { required: true })
+    const repo = core.getInput('repo', { required: true })
     const octokit = github.getOctokit(token)
     const nthInt = parseInt(nth, 10)
 
@@ -26,8 +23,15 @@ export async function run(): Promise<void> {
     }
 
     // Get id of the most recent active deployment in the specified environment
-    core.info(`Looking for most recent active deployment in environment ${environment}`)
-    const deploymentId = await fetchDeploymentStatus(octokit, context, environment, nthInt)
+    core.info(
+      `Looking for most recent active deployment in environment ${environment}`
+    )
+    const deploymentId = await fetchDeploymentStatus(
+      octokit,
+      context,
+      environment,
+      nthInt
+    )
 
     // If no active deployment was found, we're done
     if (!deploymentId) {
@@ -44,7 +48,6 @@ export async function run(): Promise<void> {
     core.setOutput('deployment-id', deploymentId)
     core.setOutput('deployment-sha', deployment.sha)
     core.setOutput('deployment', deployment)
-
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) {

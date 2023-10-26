@@ -1,7 +1,7 @@
 # Get Last Active Deployment Action
 
-Finds nth most recent deployment for a given environment.
-Useful for creating releases from deployments.
+Finds nth most recent deployment for a given environment. Useful for creating
+releases from deployments.
 
 ## Usage
 
@@ -17,32 +17,31 @@ job:
       uses: go-fjords/get-active-deployment-action@v1
       id: get-deployment
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
         environment: production
 ```
 
 ## Inputs
 
-| Name           | Description             | Required | Default                   |
-| -------------- | ----------------------- | -------- | ------------------------- |
-| `github-token` | GitHub token            | true     |                           |
-| `environment`  | Deployment environment  | true     |                           |
-| `owner`        | GitHub repository owner | false    | github.context.repo.owner |
-| `repo`         | GitHub repository name  | false    | github.context.repo.repo  |
-| `nth`          | Nth deployment          | false    | 1                         |
+| Name           | Description             | Required | Default                             |
+| -------------- | ----------------------- | -------- | ----------------------------------- |
+| `github-token` | GitHub token            | true     | Defaults to the github action token |
+| `environment`  | Deployment environment  | true     |                                     |
+| `owner`        | GitHub repository owner | false    | Defaults to context repo owner      |
+| `repo`         | GitHub repository name  | false    | Defaults to context repository name |
+| `nth`          | Nth deployment          | false    | 1                                   |
 
 ## Outputs
 
-| Name             | Description                                      |
-| ---------------- | ------------------------------------------------ |
-| `deployment-id`  | Deployment ID (numeric)                          |
-| `deployment-sha` | Deployment SHA (full)                            |
+| Name             | Description                                                                                                                                        |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `deployment-id`  | Deployment ID (numeric)                                                                                                                            |
+| `deployment-sha` | Deployment SHA (full)                                                                                                                              |
 | `deployment`     | Full [deployment object](https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#get-a-deployment) from REST API stringified |
 
 ## Example usage
 
-See a simple example below that illustrates how to use this action. For more
-advanced examples, see the [example-workflows](./example-workflows) directory.
+See a more complete example below that illustrates how to use this action.
+For more advanced examples, see the [example-workflows](./example-workflows) directory.
 
 ```yaml
 job:

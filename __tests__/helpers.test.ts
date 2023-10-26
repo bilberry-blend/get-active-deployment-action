@@ -420,8 +420,9 @@ describe('helpers.ts', () => {
                 nodes: [
                   {
                     databaseId: 999,
-                    state: 'Foo',
-                  },{
+                    state: 'Foo'
+                  },
+                  {
                     databaseId: 998,
                     state: 'ACTIVE'
                   }
@@ -447,7 +448,6 @@ describe('helpers.ts', () => {
       expect(deploymentId).toEqual(998)
       expect(octokit.graphql).toHaveBeenCalledTimes(2)
     })
-
   })
 
   describe('getDeploymentById', () => {

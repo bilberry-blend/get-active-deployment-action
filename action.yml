@@ -15,15 +15,22 @@ inputs:
   github-token:
     description: 'A github token used to create the release'
     required: true
+    default: ${{ github.token }}
   environment:
     description: 'The environment of the deployment (e.g. production-my-app)'
     required: true
   owner:
     description: 'Owner of repository to check'
     required: false
+    default: ${{ github.repo.owner }}
   repo:
     description: 'Repository to check'
     required: false
+    default: ${{ github.repo.repo }}
+  nth:
+    description: 'Find the nth deployment'
+    required: false
+    default: 1
 
 # Define your outputs here.
 outputs:

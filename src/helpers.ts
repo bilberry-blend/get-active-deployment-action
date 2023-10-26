@@ -1,8 +1,9 @@
-import { exec } from '@actions/exec'
 import * as github from '@actions/github'
-import * as core from '@actions/core'
 
 type Octokit = ReturnType<typeof github.getOctokit>
+type Deployment = Awaited<
+  ReturnType<Octokit['rest']['repos']['getDeployment']>
+>['data']
 
 export interface Context {
   owner: string
@@ -43,7 +44,7 @@ export async function fetchDeployments(
   octokit: Octokit,
   context: Context,
   environment: string,
-  first: number = 20,
+  first = 20,
   cursor?: string
 ): Promise<Deployments> {
   // Query the deployments in the environment
@@ -110,8 +111,16 @@ export async function fetchDeploymentStatus(
       await new Promise(resolve => setTimeout(resolve, 100)) // Polite rate limiting
     }
 
-    const deployments = await fetchDeployments(octokit, context, environment, 20, cursor)
-    for(const deployment of deployments.nodes.filter(d => d.state === 'ACTIVE')) {
+    const deployments = await fetchDeployments(
+      octokit,
+      context,
+      environment,
+      20,
+      cursor
+    )
+    for (const deployment of deployments.nodes.filter(
+      d => d.state === 'ACTIVE'
+    )) {
       if (found === nth) {
         break
       }
@@ -137,11 +146,11 @@ export async function getDeploymentById(
   octokit: Octokit,
   context: Context,
   deploymentId: number
-) {
+): Promise<Deployment> {
   const { data } = await octokit.rest.repos.getDeployment({
     deployment_id: deploymentId,
     owner: context.owner,
-    repo: context.repo,
+    repo: context.repo
   })
 
   return data

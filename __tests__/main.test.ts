@@ -10,7 +10,6 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as main from '../src/main'
 import * as helpers from '../src/helpers'
-import { Context } from '@actions/github/lib/context'
 
 type Octokit = ReturnType<typeof github.getOctokit>
 type Deployment = Awaited<
@@ -143,6 +142,7 @@ describe('action', () => {
   it('should handle errors of unknown type', async () => {
     // Set the action's inputs as return values from core.getInput()
     fetchDeploymentStatusMock.mockImplementation(async () => {
+      // eslint-disable-next-line prefer-promise-reject-errors
       return Promise.reject('Unknown error')
     })
 
