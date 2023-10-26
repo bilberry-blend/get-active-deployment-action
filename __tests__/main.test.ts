@@ -10,23 +10,22 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as main from '../src/main'
 import * as helpers from '../src/helpers'
+import { Context } from '@actions/github/lib/context'
 
 type Octokit = ReturnType<typeof github.getOctokit>
-type CreateReleaseResponse = Awaited<
-  ReturnType<Octokit['rest']['repos']['createRelease']>
->
+type Deployment = Awaited<
+  ReturnType<Octokit['rest']['repos']['getDeployment']>
+>['data']
 
 // Mock the GitHub Actions core library
 const getInputMock = jest.spyOn(core, 'getInput')
 const setFailedMock = jest.spyOn(core, 'setFailed')
 const setOutputMock = jest.spyOn(core, 'setOutput')
+const warningMock = jest.spyOn(core, 'warning')
 
 // Mock the side-effecting helper functions from src/helpers.ts
-const gitCurrentBranchMock = jest.spyOn(helpers, 'gitCurrentBranch')
-const gitCheckoutMock = jest.spyOn(helpers, 'gitCheckout')
-const gitLogMock = jest.spyOn(helpers, 'gitLog')
-const processCommitsMock = jest.spyOn(helpers, 'processCommits')
-const createReleaseMock = jest.spyOn(helpers, 'createRelease')
+const fetchDeploymentStatusMock = jest.spyOn(helpers, 'fetchDeploymentStatus')
+const getDeploymentByIdMock = jest.spyOn(helpers, 'getDeploymentById')
 
 // Mock the action's main function
 const runMock = jest.spyOn(main, 'run')
@@ -35,46 +34,25 @@ describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    gitCurrentBranchMock.mockImplementation(async () => {
-      return Promise.resolve('main')
-    })
-
-    gitCheckoutMock.mockImplementation(async () => {
-      return Promise.resolve()
-    })
-
-    gitLogMock.mockImplementation(async () => {
-      return Promise.resolve([
-        {
-          sha: '2345678901',
-          message: 'test commit'
-        },
-        {
-          sha: '1234567890',
-          message: 'test commit'
+    Object.defineProperty(github, 'context', {
+      value: {
+        repo: {
+          owner: 'octocat',
+          repo: 'Hello-World'
         }
-      ])
+      }
     })
 
-    processCommitsMock.mockImplementation(async () => {
-      return Promise.resolve([
-        {
-          sha: '2345678901',
-          message: 'feat: Added awesome date picker'
-        },
-        {
-          sha: '1234567890',
-          message: 'fix: Fixed bug in date picker'
-        }
-      ])
+    fetchDeploymentStatusMock.mockImplementation(async () => {
+      return Promise.resolve(1234567890)
     })
 
-    createReleaseMock.mockImplementation(async () => {
+    getDeploymentByIdMock.mockImplementation(async () => {
       return Promise.resolve({
-        html_url: 'https://example.com',
-        name: 'test release',
-        body: 'test release body'
-      } as CreateReleaseResponse['data'])
+        created_at: '2021-01-01T00:00:00Z',
+        id: 1234567890,
+        sha: '1234567890'
+      } as Deployment)
     })
   })
 
@@ -82,18 +60,14 @@ describe('action', () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
-        case 'prefix':
-          return 'my-app'
+        case 'environment':
+          return 'production-my-app'
         case 'github-token':
           return '1234567890'
-        case 'workspace':
-          return 'my-app'
-        case 'branch':
-          return 'main'
-        case 'from':
-          return '1234567890'
-        case 'to':
-          return '2345678901'
+        case 'owner':
+          return 'octocat'
+        case 'repo':
+          return 'Hello-World'
         default:
           return ''
       }
@@ -101,81 +75,117 @@ describe('action', () => {
 
     await main.run()
     expect(runMock).toHaveReturned()
-
-    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', true)
-
+    expect(setOutputMock).toHaveBeenNthCalledWith(
+      1,
+      'deployment-id',
+      1234567890
+    )
     expect(setOutputMock).toHaveBeenNthCalledWith(
       2,
-      'release-url',
-      expect.stringMatching('https://example.com')
+      'deployment-sha',
+      '1234567890'
     )
+    expect(setOutputMock).toHaveBeenNthCalledWith(3, 'deployment', {
+      created_at: '2021-01-01T00:00:00Z',
+      id: 1234567890,
+      sha: '1234567890'
+    })
+  })
 
+  it('sets a failed status if fetchDeploymentStatus fails', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    fetchDeploymentStatusMock.mockImplementation(() => {
+      throw new Error('Failed to fetch deployment status')
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+    expect(setFailedMock).toHaveBeenNthCalledWith(
+      1,
+      'Failed to fetch deployment status'
+    )
+  })
+
+  it('sets a failed status if getDeploymentById fails', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    getDeploymentByIdMock.mockImplementation(() => {
+      throw new Error('Failed to get deployment by id')
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+    expect(setFailedMock).toHaveBeenNthCalledWith(
+      1,
+      'Failed to get deployment by id'
+    )
+  })
+
+  it('should print warning if no active deployment is found', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    fetchDeploymentStatusMock.mockImplementation(async () => {
+      return Promise.resolve(null)
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+
+    expect(warningMock).toHaveBeenCalledTimes(1)
+    expect(setFailedMock).toHaveBeenCalledTimes(0) // Should not fail the workflow
+    expect(setOutputMock).toHaveBeenCalledTimes(0) // Should not set any outputs, either
+  })
+
+  it('should handle errors of unknown type', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    fetchDeploymentStatusMock.mockImplementation(async () => {
+      return Promise.reject('Unknown error')
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
+
+    // Verify that all of the core library functions were called correctly
+    expect(setFailedMock).toHaveBeenNthCalledWith(
+      1,
+      'An unknown error occurred'
+    )
+  })
+
+  it('should default owner and repo to the current repository as defined in github context', async () => {
+    // Set the action's inputs as return values from core.getInput()
+    getInputMock.mockClear() // Clear the mock so we can set different return values
+    getInputMock.mockImplementation((name: string): string => {
+      switch (name) {
+        case 'environment':
+          return 'production-my-app'
+        case 'github-token':
+          return '1234567890'
+        default:
+          return ''
+      }
+    })
+
+    await main.run()
+    expect(runMock).toHaveReturned()
     expect(setOutputMock).toHaveBeenNthCalledWith(
-      3,
-      'release-title',
-      expect.stringMatching('test release')
+      1,
+      'deployment-id',
+      1234567890
     )
-
     expect(setOutputMock).toHaveBeenNthCalledWith(
-      4,
-      'release-body',
-      expect.stringMatching('test release body')
+      2,
+      'deployment-sha',
+      '1234567890'
     )
-  })
-
-  it('sets a failed status if git log fails', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    gitLogMock.mockImplementation(() => {
-      throw new Error('Failed to get git log')
+    expect(setOutputMock).toHaveBeenNthCalledWith(3, 'deployment', {
+      created_at: '2021-01-01T00:00:00Z',
+      id: 1234567890,
+      sha: '1234567890'
     })
-
-    await main.run()
-    expect(runMock).toHaveReturned()
-
-    // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Failed to get git log')
-    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', false)
-  })
-
-  it('sets a failed status if createRelease fails', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    createReleaseMock.mockImplementation(() => {
-      throw new Error('Failed to create release')
-    })
-
-    await main.run()
-    expect(runMock).toHaveReturned()
-
-    // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Failed to create release')
-    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', false)
-  })
-
-  it('returns early if no relevant commits are found', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    gitLogMock.mockImplementation(async () => {
-      return Promise.resolve([
-        {
-          sha: '2345678901',
-          message: 'test commit'
-        },
-        {
-          sha: '1234567890',
-          message: 'test commit'
-        }
-      ])
-    })
-
-    processCommitsMock.mockImplementation(async () => {
-      return Promise.resolve([])
-    })
-
-    await main.run()
-    expect(runMock).toHaveReturned()
-
-    // Verify that all of the core library functions were called correctly
-    expect(setOutputMock.mock.calls.length).toBe(1)
-    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'released', false)
-    expect(createReleaseMock.mock.calls.length).toBe(0)
   })
 })

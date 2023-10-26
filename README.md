@@ -1,36 +1,43 @@
-# Turbo Monorepo Release Action
+# Get Last Active Deployment Action
 
-Create release for a Turbo Monorepo for a commit range. It is intended to be
-used in a workflow that creates a deployment. The action accepts two commits
-representing a range.
+Finds nth most recent deployment for a given environment.
+Useful for creating releases from deployments.
 
-These commits are then filtered down by two criteria:
+## Usage
 
-1. The commit subject matches the conventional commit format
-1. The commit triggers a change in the workspace as defined by turbo build
-
-They are grouped by type (fix, feat, etc) and a release is created using the
-GitHub API. The release content is set as action output, so it can be used in
-subsequent steps.
+```yaml
+job:
+  name: Get last active deployment
+  runs-on: ubuntu-latest
+  # Give the job access to deployments
+  permissions:
+    deployments: read
+  steps:
+    - name: Get last active deployment
+      uses: go-fjords/get-active-deployment-action@v1
+      id: get-deployment
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        environment: production
+```
 
 ## Inputs
 
-| Name           | Description                          | Required | Default |
-| -------------- | ------------------------------------ | -------- | ------- |
-| `github-token` | GitHub token                         | true     |         |
-| `workspace`    | Turbo workspace name                 | true     |         |
-| `prefix`       | Prefix for release title             | false    | ""      |
-| `from`         | Commit SHA to start from (exclusive) | true     |         |
-| `to`           | Commit SHA to end at                 | true     |         |
+| Name           | Description             | Required | Default                   |
+| -------------- | ----------------------- | -------- | ------------------------- |
+| `github-token` | GitHub token            | true     |                           |
+| `environment`  | Deployment environment  | true     |                           |
+| `owner`        | GitHub repository owner | false    | github.context.repo.owner |
+| `repo`         | GitHub repository name  | false    | github.context.repo.repo  |
+| `nth`          | Nth deployment          | false    | 1                         |
 
 ## Outputs
 
-| Name            | Description              |
-| --------------- | ------------------------ |
-| `released`      | If a release was created |
-| `release-title` | Release title            |
-| `release-body`  | Release description      |
-| `release-url`   | Release URL to GitHub    |
+| Name             | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| `deployment-id`  | Deployment ID (numeric)                          |
+| `deployment-sha` | Deployment SHA (full)                            |
+| `deployment`     | Full [deployment object](https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#get-a-deployment) from REST API stringified |
 
 ## Example usage
 
@@ -38,52 +45,22 @@ See a simple example below that illustrates how to use this action. For more
 advanced examples, see the [example-workflows](./example-workflows) directory.
 
 ```yaml
-on:
-  - deployment_status
-# Release job:
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy
-    permissions:
-      contents: write
-    if:
-      ${{ startsWith(github.event.deployment.environment, 'production-') &&
-      github.event.deployment_status.state == 'success' }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Create release
-        uses: go-fjords/create-release-from-deployment-action@v1
-        with:
-          # We need the token with write permissions to do git operations and create the release
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # The name of the turbo/pnpm workspace to check for changes
-          workspace: my-workspace
-          # The prefix is used to create the release title
-          prefix: 'My App'
-          # Get the start commit for the release (exclusive, not part of the release)
-          from: 6b81ece3474de57f7fa070192fa1b88e303acb2a
-          # Get the final commit for the release (inclusive, part of the release)
-          to: ${{ github.event.deployment.ref }}
-      - name: Print release URL
-        run: echo ${{ steps.create-release.outputs.release-url }}
-```
-
-## Example release body output
-
-The release body is generated from the commit messages in the range.
-
-```markdown
-👷 **build**
-
-- Bump actions/setup-node from 2 to 4 (#12)
-
-📝 **docs**
-
-- Improve documentation (#13)
+job:
+  name: Get last active deployment
+  runs-on: ubuntu-latest
+  # Give the job access to deployments
+  permissions:
+    deployments: read
+  steps:
+    - name: Get last active deployment
+      uses: go-fjords/get-active-deployment-action@v1
+      id: get-deployment
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        environment: production
+        owner: your_github_username # Choose another owner
+        repo: your_repository_name # Choose another repository
+      nth: 2 # Get the second most recent deployment
 ```
 
 ## Development

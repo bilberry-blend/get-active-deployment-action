@@ -1,243 +1,148 @@
 import { exec } from '@actions/exec'
 import * as github from '@actions/github'
-import { Context } from '@actions/github/lib/context'
 import * as core from '@actions/core'
-import { DryRunJson } from './turbo'
 
 type Octokit = ReturnType<typeof github.getOctokit>
-type CreateRelease = Octokit['rest']['repos']['createRelease']
-type CreateReleaseResponse = Awaited<ReturnType<CreateRelease>>['data']
 
-export const conventionalNameToEmoji = {
-  build: '👷',
-  chore: '🧹',
-  ci: '🤖',
-  docs: '📝',
-  feat: '✨',
-  fix: '🐛',
-  perf: '⚡️',
-  refactor: '♻️',
-  revert: '⏪',
-  style: '🎨',
-  test: '✅'
+export interface Context {
+  owner: string
+  repo: string
 }
 
-export type ConventionalType = keyof typeof conventionalNameToEmoji
-
-/**
- * Checks if a commit message is a conventional commit.
- */
-function conventionalCommit(message: string): boolean {
-  // No capture groups or length limits, just a simple regex to check if the message matches the conventional commit format
-  // Check that type is one of the conventional types
-  const regex =
-    /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: .+/
-  return regex.test(message)
-}
-
-export interface CommitMetadata {
-  type: keyof typeof conventionalNameToEmoji
-  scope?: string
-  description: string
-}
-
-function extractCommitMetadata(message: string): CommitMetadata | null {
-  const regex =
-    /^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\(.+\))?: (.+)/
-  const match = regex.exec(message)
-  if (match === null) {
-    return null
-  }
-  return {
-    type: match[1] as ConventionalType,
-    scope: match[2],
-    description: match[3]
+interface Deployments {
+  nodes: {
+    databaseId: number
+    state: string
+  }[]
+  pageInfo: {
+    hasNextPage: boolean
+    endCursor: string
   }
 }
 
-export async function gitCurrentBranch(): Promise<string> {
-  // Get current branch name
-  let currentBranch = ''
-  const exitCode = await exec('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
-    listeners: {
-      stdout: (data: Buffer) => {
-        currentBranch += data.toString()
-      }
+export interface DeploymentsGraphQLResponse {
+  fetchDeployments: {
+    repository: {
+      deployments: Deployments
     }
-  })
-  if (exitCode !== 0) {
-    throw new Error('Failed to get current branch')
   }
-  return currentBranch.trim()
-}
-
-export async function gitCheckout(branch: string): Promise<void> {
-  const result = await exec('git', ['checkout', branch])
-  if (result !== 0) {
-    throw new Error(`Failed to checkout branch ${branch}`)
-  }
-}
-
-export interface GitLog {
-  sha: string
-  message: string
 }
 
 /**
- * Get the list of shas between the current and previous sha.
- * Uses git log to print the sha and commit message header for each commit.
- * @param currentSha
- * @param previousSha
- * @returns List of shas between the current and previous sha
+ * Fetches one page of deployments in the specified environment.
+ * If a cursor is provided, fetches the next page of deployments.
+ * If no cursor is provided, fetches the first page of deployments.
+ * @param octokit
+ * @param context
+ * @param environment
+ * @param first
+ * @param cursor
+ * @returns the deployments object with the nodes and pageInfo properties
  */
-export async function gitLog(from: string, to: string): Promise<GitLog[]> {
-  let shas = ''
-  const isSameSha = from === to
-  const range = isSameSha ? `${to} -1` : `${from}..${to}`
-  const result = await exec(
-    'git',
-    ['log', `${range}`, `--pretty=format:%H %s`],
-    {
-      listeners: {
-        stdout: (data: Buffer) => {
-          shas += data.toString()
-        }
-      }
-    }
-  )
-
-  if (result !== 0) {
-    throw new Error('Failed to get git log')
-  }
-
-  const commits = shas.split('\n').map(commit => {
-    // Split sha and message
-    const [sha, ...message] = commit.split(' ')
-    return { sha, message: message.join(' ') } // Not very efficient, but it's a small string
-  })
-
-  return commits
-}
-
-export async function releaseSha(
+export async function fetchDeployments(
   octokit: Octokit,
   context: Context,
-  environment: string
-): Promise<string> {
-  // Get deployment statuses for the selected environment
-  const deploymentStatuses = await octokit.rest.repos.listDeployments({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    environment
-  })
-
-  let previousSha: string
-
-  // Find commit ref for the latest deployment, if any
-  if (deploymentStatuses.data.length > 0) {
-    const latestDeployment = deploymentStatuses.data[0]
-    previousSha = latestDeployment.sha
-  } else {
-    previousSha = context.sha
-  }
-
-  return previousSha
-}
-
-export async function processCommits(
-  commits: GitLog[],
-  workspace: string
-): Promise<GitLog[]> {
-  const relevantCommits: GitLog[] = []
-
-  // Checkout commit using shell script
-  for (const commit of commits) {
-    const checkout = await exec('git', ['checkout', commit.sha])
-    if (checkout !== 0) {
-      continue
-    }
-    let result = ''
-    const exitCode = await exec(
-      'npx',
-      [
-        'turbo',
-        'run',
-        'build',
-        `--filter='${workspace}...[${commit.sha}^1]'`,
-        '--dry=json'
-      ],
-      {
-        listeners: {
-          stdout: (data: Buffer) => {
-            result += data.toString()
+  environment: string,
+  first: number = 20,
+  cursor?: string
+): Promise<Deployments> {
+  // Query the deployments in the environment
+  // Sort by createdAt descending, so the most recent deployment is first
+  // Limit the number of deployments to the last 20
+  // If a cursor is provided, use that to paginate to the next page of results
+  const data = await octokit.graphql<DeploymentsGraphQLResponse>(
+    `
+    query fetchDeployments($owner: String!, $repo: String!, $environment: String!, $first: Int!, $cursor: String) {
+      repository(owner: $owner, name: $repo) {
+        deployments(
+          first: $first,
+          environments: [$environment],
+          orderBy: {field: CREATED_AT, direction: DESC},
+          after: $cursor
+        ) {
+          nodes {
+            databaseId
+            state
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
           }
         }
       }
-    )
-
-    if (exitCode !== 0) {
-      continue
     }
-
-    // Parse output and see if commit affects workspace
-    const json = JSON.parse(result) as DryRunJson
-
-    const packages = json.packages
-    const isMonorepo = json.monorepo
-    const isConventionalCommit = conventionalCommit(commit.message)
-
-    core.debug(`Packages: ${packages}`)
-    core.debug(`Is monorepo: ${isMonorepo}`)
-    core.debug(`Is conventional commit: ${isConventionalCommit}`)
-
-    if ((!isMonorepo || packages.includes(workspace)) && isConventionalCommit) {
-      relevantCommits.push(commit)
+  `,
+    {
+      first,
+      cursor,
+      environment,
+      owner: context.owner,
+      repo: context.repo
     }
-  }
-  return relevantCommits
-}
-
-function commitToMetadata(commit: GitLog): CommitMetadata | null {
-  return extractCommitMetadata(commit.message)
-}
-
-export function commitsToMetadata(commits: GitLog[]): CommitMetadata[] {
-  return commits
-    .map(c => commitToMetadata(c))
-    .filter((c): c is CommitMetadata => c !== null)
-}
-
-export function groupCommits(
-  commits: CommitMetadata[]
-): Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]> {
-  return commits.reduce(
-    (acc, metadata) => {
-      if (!acc[metadata.type]) {
-        acc[metadata.type] = []
-      }
-      acc[metadata.type].push(metadata)
-      return acc
-    },
-    {} as Record<keyof typeof conventionalNameToEmoji, CommitMetadata[]>
   )
+
+  // Return the deployments
+  return data.fetchDeployments.repository.deployments
 }
 
-// Primarily extracted as a helper for easier mocking in tests
-export async function createRelease(
+/**
+ * Finds the most recent active deployment in specified environment, if any.
+ * Politely pages through the deployments using the GitHub GraphQL API.
+ * We return the databaseId of the deployment, which can be used to fetch the deployment
+ * from the GitHub REST API.
+ * @param octokit
+ * @param context
+ * @param environment
+ * @returns the deployment id if found, otherwise null
+ */
+export async function fetchDeploymentStatus(
   octokit: Octokit,
   context: Context,
-  releaseTitle: string,
-  releaseBody: string
-): Promise<CreateReleaseResponse> {
-  const result = await octokit.rest.repos.createRelease({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    tag_name: releaseTitle,
-    name: releaseTitle,
-    body: releaseBody,
-    draft: false,
-    prerelease: false
+  environment: string,
+  nth: number
+): Promise<number | null> {
+  let deploymentId
+  let cursor
+  let hasNextPage = true
+  let found = 0
+  while (hasNextPage) {
+    if (cursor) {
+      await new Promise(resolve => setTimeout(resolve, 100)) // Polite rate limiting
+    }
+
+    const deployments = await fetchDeployments(octokit, context, environment, 20, cursor)
+    for(const deployment of deployments.nodes.filter(d => d.state === 'ACTIVE')) {
+      if (found === nth) {
+        break
+      }
+      deploymentId = deployment.databaseId
+      found++
+    }
+
+    cursor = deployments.pageInfo.endCursor
+    hasNextPage = deployments.pageInfo.hasNextPage
+  }
+
+  return deploymentId ?? null
+}
+
+/**
+ * Fetches the full deployment object by ID using GitHub REST API.
+ * @param octokit
+ * @param context
+ * @param deploymentId
+ * @returns the deployment object
+ */
+export async function getDeploymentById(
+  octokit: Octokit,
+  context: Context,
+  deploymentId: number
+) {
+  const { data } = await octokit.rest.repos.getDeployment({
+    deployment_id: deploymentId,
+    owner: context.owner,
+    repo: context.repo,
   })
 
-  return result.data
+  return data
 }
