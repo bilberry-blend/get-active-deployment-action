@@ -12,10 +12,15 @@ export async function run(): Promise<void> {
     const environment: string = core.getInput('environment', { required: true })
     const token: string = core.getInput('github-token')
     const nth = core.getInput('nth')
-    const owner = core.getInput('owner')
-    const repo = core.getInput('repo')
+    const repository = core.getInput('repository')
     const octokit = github.getOctokit(token)
     const nthInt = parseInt(nth, 10)
+
+    const [owner, repo] = repository.split('/')
+
+    if (repo === undefined) {
+      throw new Error('Invalid repository')
+    }
 
     const context = {
       owner,

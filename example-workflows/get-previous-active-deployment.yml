@@ -14,5 +14,6 @@ jobs:
         id: get-deployment
         with:
           environment: ${{ github.event.deployment.environment }}
+
       - name: Print deployment
         run: echo "${{ steps.get-deployment.outputs.deployment }}"

@@ -27,13 +27,12 @@ job:
 
 ## Inputs
 
-| Name           | Description              | Required | Default                             |
-| -------------- | ------------------------ | -------- | ----------------------------------- |
-| `github-token` | GitHub token             | false     | Defaults to the github action token |
-| `environment`  | Deployment environment   | true     |                                     |
-| `owner`        | GitHub repository owner  | false    | Defaults to context repo owner      |
-| `repo`         | GitHub repository name   | false    | Defaults to context repository name |
-| `nth`          | Nth deployment (1 based) | false    | 1                                   |
+| Name           | Description                      | Required | Default                             |
+| -------------- | -------------------------------- | -------- | ----------------------------------- |
+| `github-token` | GitHub token                     | false    | Defaults to the github action token |
+| `environment`  | Deployment environment           | true     |                                     |
+| `repository`   | GitHub owner and repository name | false    | Defaults to current repository      |
+| `nth`          | Nth deployment (1 based)         | false    | 1                                   |
 
 ## Outputs
 
@@ -64,8 +63,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           environment: production
-          owner: your_github_username # Choose another owner
-          repo: your_repository_name # Choose another repository
+          repository: my-org/my-repo
           nth: 2 # Get the second most recent deployment
 ```
 
