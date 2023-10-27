@@ -14,7 +14,7 @@ author: 'Adventure Tech AS'
 inputs:
   github-token:
     description: 'A github token used to create the release'
-    required: true
+    required: false
     default: ${{ github.token }}
   environment:
     description: 'The environment of the deployment (e.g. production-my-app)'

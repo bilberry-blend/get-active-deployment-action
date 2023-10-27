@@ -22,13 +22,13 @@ job:
 
 ## Inputs
 
-| Name           | Description             | Required | Default                             |
-| -------------- | ----------------------- | -------- | ----------------------------------- |
-| `github-token` | GitHub token            | true     | Defaults to the github action token |
-| `environment`  | Deployment environment  | true     |                                     |
-| `owner`        | GitHub repository owner | false    | Defaults to context repo owner      |
-| `repo`         | GitHub repository name  | false    | Defaults to context repository name |
-| `nth`          | Nth deployment          | false    | 1                                   |
+| Name           | Description              | Required | Default                             |
+| -------------- | ------------------------ | -------- | ----------------------------------- |
+| `github-token` | GitHub token             | false     | Defaults to the github action token |
+| `environment`  | Deployment environment   | true     |                                     |
+| `owner`        | GitHub repository owner  | false    | Defaults to context repo owner      |
+| `repo`         | GitHub repository name   | false    | Defaults to context repository name |
+| `nth`          | Nth deployment (1 based) | false    | 1                                   |
 
 ## Outputs
 
@@ -40,8 +40,9 @@ job:
 
 ## Example usage
 
-See a more complete example below that illustrates how to use this action.
-For more advanced examples, see the [example-workflows](./example-workflows) directory.
+See a more complete example below that illustrates how to use this action. For
+more advanced examples, see the [example-workflows](./example-workflows)
+directory.
 
 ```yaml
 job:
