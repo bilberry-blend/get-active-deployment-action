@@ -1,4 +1,5 @@
 import * as github from '@actions/github'
+import * as core from '@actions/core'
 
 type Octokit = ReturnType<typeof github.getOctokit>
 type Deployment = Awaited<
@@ -22,12 +23,8 @@ interface Deployments {
 }
 
 export interface DeploymentsGraphQLResponse {
-  data: {
-    fetchDeployments: {
-      repository: {
-        deployments: Deployments
-      }
-    }
+  repository: {
+    deployments: Deployments
   }
 }
 
@@ -53,7 +50,7 @@ export async function fetchDeployments(
   // Sort by createdAt descending, so the most recent deployment is first
   // Limit the number of deployments to the last 20
   // If a cursor is provided, use that to paginate to the next page of results
-  const { data } = await octokit.graphql<DeploymentsGraphQLResponse>(
+  const data = await octokit.graphql<DeploymentsGraphQLResponse>(
     `
     query fetchDeployments($owner: String!, $repo: String!, $environment: String!, $first: Int!, $cursor: String) {
       repository(owner: $owner, name: $repo) {
@@ -84,8 +81,10 @@ export async function fetchDeployments(
     }
   )
 
+  core.info(JSON.stringify(data, null, 2))
+
   // Return the deployments
-  return data.fetchDeployments.repository.deployments
+  return data.repository.deployments
 }
 
 /**
