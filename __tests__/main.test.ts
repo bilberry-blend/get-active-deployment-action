@@ -53,6 +53,10 @@ describe('action', () => {
         sha: '1234567890'
       } as Deployment)
     })
+
+    setOutputMock.mockImplementation(() => {})
+    warningMock.mockImplementation(() => {})
+    setFailedMock.mockImplementation(() => {})
   })
 
   it('creates release and sets the release outputs', async () => {

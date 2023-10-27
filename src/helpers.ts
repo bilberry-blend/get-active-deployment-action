@@ -1,5 +1,4 @@
 import * as github from '@actions/github'
-import * as core from '@actions/core'
 
 type Octokit = ReturnType<typeof github.getOctokit>
 type Deployment = Awaited<
@@ -81,9 +80,6 @@ export async function fetchDeployments(
     }
   )
 
-  core.info(JSON.stringify(data, null, 2))
-
-  // Return the deployments
   return data.repository.deployments
 }
 
