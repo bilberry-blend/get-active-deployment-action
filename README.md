@@ -50,22 +50,23 @@ more advanced examples, see the [example-workflows](./example-workflows)
 directory.
 
 ```yaml
-job:
-  name: Get last active deployment
-  runs-on: ubuntu-latest
-  # Give the job access to deployments
-  permissions:
-    deployments: read
-  steps:
-    - name: Get last active deployment
-      uses: go-fjords/get-active-deployment-action@v1
-      id: get-deployment
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        environment: production
-        owner: your_github_username # Choose another owner
-        repo: your_repository_name # Choose another repository
-      nth: 2 # Get the second most recent deployment
+jobs:
+  get-deployment:
+    name: Get last active deployment
+    runs-on: ubuntu-latest
+    # Give the job access to deployments
+    permissions:
+      deployments: read
+    steps:
+      - name: Get last active deployment
+        uses: go-fjords/get-active-deployment-action@v1
+        id: get-deployment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          environment: production
+          owner: your_github_username # Choose another owner
+          repo: your_repository_name # Choose another repository
+          nth: 2 # Get the second most recent deployment
 ```
 
 ## Development

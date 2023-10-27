@@ -119,7 +119,7 @@ export async function fetchDeploymentStatus(
       cursor
     )
     for (const deployment of deployments.nodes.filter(
-      d => d.state === 'ACTIVE'
+      d => d.state === 'ACTIVE' || d.state === 'INACTIVE'
     )) {
       if (found === nth) {
         break

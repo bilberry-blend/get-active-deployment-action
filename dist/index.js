@@ -29808,7 +29808,7 @@ async function fetchDeploymentStatus(octokit, context, environment, nth) {
             await new Promise(resolve => setTimeout(resolve, 100)); // Polite rate limiting
         }
         const deployments = await fetchDeployments(octokit, context, environment, 20, cursor);
-        for (const deployment of deployments.nodes.filter(d => d.state === 'ACTIVE')) {
+        for (const deployment of deployments.nodes.filter(d => d.state === 'ACTIVE' || d.state === 'INACTIVE')) {
             if (found === nth) {
                 break;
             }

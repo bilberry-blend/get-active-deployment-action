@@ -309,7 +309,7 @@ describe('helpers.ts', () => {
                   },
                   {
                     databaseId: 1000,
-                    state: 'ACTIVE'
+                    state: 'INACTIVE'
                   }
                 ],
                 pageInfo: {
@@ -353,7 +353,7 @@ describe('helpers.ts', () => {
                   },
                   {
                     databaseId: 1000,
-                    state: 'ACTIVE'
+                    state: 'INACTIVE'
                   }
                 ],
                 pageInfo: {
@@ -398,7 +398,7 @@ describe('helpers.ts', () => {
                   },
                   {
                     databaseId: 1000,
-                    state: 'ACTIVE'
+                    state: 'INACTIVE'
                   }
                 ],
                 pageInfo: {
@@ -424,7 +424,7 @@ describe('helpers.ts', () => {
                   },
                   {
                     databaseId: 998,
-                    state: 'ACTIVE'
+                    state: 'INACTIVE'
                   }
                 ],
                 pageInfo: {

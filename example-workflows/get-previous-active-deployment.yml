@@ -1,0 +1,18 @@
+on:
+  - deployment
+# Release job:
+jobs:
+  get-deployment:
+    name: Get previous active deployment
+    runs-on: ubuntu-latest
+    # Give the job access to deployments
+    permissions:
+      deployments: read
+    steps:
+      - name: Get previous active deployment
+        uses: go-fjords/get-active-deployment-action@v1
+        id: get-deployment
+        with:
+          environment: ${{ github.event.deployment.environment }}
+      - name: Print deployment
+        run: echo "${{ steps.get-deployment.outputs.deployment }}"
