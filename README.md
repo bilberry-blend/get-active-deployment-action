@@ -1,6 +1,9 @@
 # Get Last Active Deployment Action
 
 ![GitHub Workflow Status](./badges/coverage.svg)
+[![Check dist/](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/check-dist.yml)
+[![Continuous Integration](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/ci.yml/badge.svg)](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/ci.yml)
+[![Lint Code Base](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/linter.yml/badge.svg)](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/linter.yml)
 
 Finds nth most recent deployment for a given environment. Useful for creating
 releases from deployments.
