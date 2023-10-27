@@ -1,5 +1,7 @@
 # Get Last Active Deployment Action
 
+![GitHub Workflow Status](./badges/coverage.svg)
+
 Finds nth most recent deployment for a given environment. Useful for creating
 releases from deployments.
 
