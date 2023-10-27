@@ -29757,7 +29757,7 @@ async function fetchDeployments(octokit, context, environment, first = 20, curso
     // Sort by createdAt descending, so the most recent deployment is first
     // Limit the number of deployments to the last 20
     // If a cursor is provided, use that to paginate to the next page of results
-    const data = await octokit.graphql(`
+    const { data } = await octokit.graphql(`
     query fetchDeployments($owner: String!, $repo: String!, $environment: String!, $first: Int!, $cursor: String) {
       repository(owner: $owner, name: $repo) {
         deployments(
