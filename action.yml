@@ -14,34 +14,32 @@ author: 'Adventure Tech AS'
 inputs:
   github-token:
     description: 'A github token used to create the release'
-    required: true
-  prefix:
-    description: 'The prefix of the release tag (e.g. my-app)'
     required: false
-    default: ''
-  workspace:
-    description: 'The turbo workspace name used to filter commits, (e.g. my-app)'
+    default: ${{ github.token }}
+  environment:
+    description: 'The environment of the deployment (e.g. production-my-app)'
     required: true
-  from:
-    description: 'Commit marking start of release (exclusive)'
-    required: true
-  to:
-    description: 'Last commit in the release'
-    required: true
-  branch:
-    description: 'The branch to create the release from'
+  owner:
+    description: 'Owner of repository to check'
     required: false
+    default: ${{ github.repo.owner }}
+  repo:
+    description: 'Repository to check'
+    required: false
+    default: ${{ github.repo.repo }}
+  nth:
+    description: 'Find the nth deployment'
+    required: false
+    default: 1
 
 # Define your outputs here.
 outputs:
-  released:
-    description: 'Whether a release was created'
-  release-url:
-    description: 'The GitHub release URL for the created release'
-  release-title:
-    description: 'The release title for the created release'
-  release-body:
-    description: 'The release body for the created release'
+  deployment-id:
+    description: 'The GitHub Id of the deployment'
+  deployment-sha:
+    description: 'The sha of the commit that was deployed'
+  deployment:
+    description: 'The deployment object as stringified JSON'
 
 runs:
   using: node20
