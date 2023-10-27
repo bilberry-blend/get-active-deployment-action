@@ -10,10 +10,10 @@ export async function run(): Promise<void> {
   try {
     // Get some initial context and inputs necessary for the action
     const environment: string = core.getInput('environment', { required: true })
-    const token: string = core.getInput('github-token', { required: true })
-    const nth = core.getInput('nth', { required: true })
-    const owner = core.getInput('owner', { required: true })
-    const repo = core.getInput('repo', { required: true })
+    const token: string = core.getInput('github-token')
+    const nth = core.getInput('nth')
+    const owner = core.getInput('owner')
+    const repo = core.getInput('repo')
     const octokit = github.getOctokit(token)
     const nthInt = parseInt(nth, 10)
 
