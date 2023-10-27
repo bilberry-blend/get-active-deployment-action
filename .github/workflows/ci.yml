@@ -81,7 +81,7 @@ jobs:
         id: test-action-second
         uses: ./
         with:
-          environment: 'staging'
+          environment: 'production'
           nth: 2
 
       - name: Check second value

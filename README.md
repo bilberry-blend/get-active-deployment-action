@@ -29,7 +29,7 @@ job:
 
 | Name           | Description                      | Required | Default                             |
 | -------------- | -------------------------------- | -------- | ----------------------------------- |
-| `github-token` | GitHub token                     | false    | Defaults to the github action token |
+| `github-token` | GitHub token                     | false    | Defaults to the GitHub action token |
 | `environment`  | Deployment environment           | true     |                                     |
 | `repository`   | GitHub owner and repository name | false    | Defaults to current repository      |
 | `nth`          | Nth deployment (1 based)         | false    | 1                                   |
