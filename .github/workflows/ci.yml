@@ -26,7 +26,7 @@ jobs:
         id: setup-node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: npm
 
       - name: Install Dependencies
@@ -64,36 +64,28 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Get reference to first and third commit in main
-        id: get-commits
-        run: |
-          git log --pretty="format:%H" origin/main
-          git log --pretty="format:%H" -n 3 origin/main > commits.txt
-          echo "first-commit=$(tail -n 1 commits.txt)" >> "$GITHUB_OUTPUT"
-          echo "third-commit=$(head -n 1 commits.txt)" >> "$GITHUB_OUTPUT"
-
-      - name: Test Local Action
-        id: test-action
+      - name: Test find first deployment
+        id: test-action-first
         uses: ./
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          workspace: "src"
-          prefix: "test-action"
-          from: ${{ steps.get-commits.outputs.first-commit }}
-          to: ${{ steps.get-commits.outputs.third-commit }}
-          branch: "main"
+          environment: 'production'
 
-      - name: Print URL
-        id: output-url
-        if: steps.test-action.outputs.released
-        run: echo "${{ steps.test-action.outputs.release-url }}"
+      - name: Check first value
+        uses: actions/github-script@v6
+        if: ${{ steps.test-action-first.outputs.deployment-sha != '91e3a21ecd1a483f917a49a972cd107b5f1009da' }}
+        with:
+          script: core.setFailed('Deployment SHA did not match expected value')
 
-      - name: Print title
-        id: output-title
-        if: steps.test-action.outputs.released
-        run: echo "${{ steps.test-action.outputs.release-title }}"
 
-      - name: Print body
-        id: output-body
-        if: steps.test-action.outputs.released
-        run: echo "${{ steps.test-action.outputs.release-body }}"
+      - name: Test find second deployment
+        id: test-action-second
+        uses: ./
+        with:
+          environment: 'production'
+          nth: 2
+
+      - name: Check second value
+        uses: actions/github-script@v6
+        if: ${{ steps.test-action-second.outputs.deployment-sha != '91e3a21ecd1a483f917a49a972cd107b5f1009da' }}
+        with:
+          script: core.setFailed('Deployment SHA did not match expected value')

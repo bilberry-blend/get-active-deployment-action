@@ -53,6 +53,10 @@ describe('action', () => {
         sha: '1234567890'
       } as Deployment)
     })
+
+    setOutputMock.mockImplementation(() => {})
+    warningMock.mockImplementation(() => {})
+    setFailedMock.mockImplementation(() => {})
   })
 
   it('creates release and sets the release outputs', async () => {
@@ -63,10 +67,8 @@ describe('action', () => {
           return 'production-my-app'
         case 'github-token':
           return '1234567890'
-        case 'owner':
-          return 'octocat'
-        case 'repo':
-          return 'Hello-World'
+        case 'repository':
+          return 'octocat/Hello-World'
         default:
           return ''
       }
@@ -156,7 +158,7 @@ describe('action', () => {
     )
   })
 
-  it('should default owner and repo to the current repository as defined in github context', async () => {
+  it('should return error if repository is invalid', async () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockClear() // Clear the mock so we can set different return values
     getInputMock.mockImplementation((name: string): string => {
@@ -165,6 +167,8 @@ describe('action', () => {
           return 'production-my-app'
         case 'github-token':
           return '1234567890'
+        case 'repository':
+          return 'invalid-repo'
         default:
           return ''
       }
@@ -172,20 +176,7 @@ describe('action', () => {
 
     await main.run()
     expect(runMock).toHaveReturned()
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
-      'deployment-id',
-      1234567890
-    )
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      2,
-      'deployment-sha',
-      '1234567890'
-    )
-    expect(setOutputMock).toHaveBeenNthCalledWith(3, 'deployment', {
-      created_at: '2021-01-01T00:00:00Z',
-      id: 1234567890,
-      sha: '1234567890'
-    })
+
+    expect(setFailedMock).toHaveBeenNthCalledWith(1, 'Invalid repository')
   })
 })

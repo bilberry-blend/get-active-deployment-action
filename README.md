@@ -1,5 +1,10 @@
 # Get Last Active Deployment Action
 
+![GitHub Workflow Status](./badges/coverage.svg)
+[![Check dist/](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/check-dist.yml)
+[![Continuous Integration](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/ci.yml/badge.svg)](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/ci.yml)
+[![Lint Code Base](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/linter.yml/badge.svg)](https://github.com/go-fjords/get-active-deployment-action/actions/workflows/linter.yml)
+
 Finds nth most recent deployment for a given environment. Useful for creating
 releases from deployments.
 
@@ -22,13 +27,12 @@ job:
 
 ## Inputs
 
-| Name           | Description              | Required | Default                             |
-| -------------- | ------------------------ | -------- | ----------------------------------- |
-| `github-token` | GitHub token             | false     | Defaults to the github action token |
-| `environment`  | Deployment environment   | true     |                                     |
-| `owner`        | GitHub repository owner  | false    | Defaults to context repo owner      |
-| `repo`         | GitHub repository name   | false    | Defaults to context repository name |
-| `nth`          | Nth deployment (1 based) | false    | 1                                   |
+| Name           | Description                      | Required | Default                             |
+| -------------- | -------------------------------- | -------- | ----------------------------------- |
+| `github-token` | GitHub token                     | false    | Defaults to the GitHub action token |
+| `environment`  | Deployment environment           | true     |                                     |
+| `repository`   | GitHub owner and repository name | false    | Defaults to current repository      |
+| `nth`          | Nth deployment (1 based)         | false    | 1                                   |
 
 ## Outputs
 
@@ -45,22 +49,22 @@ more advanced examples, see the [example-workflows](./example-workflows)
 directory.
 
 ```yaml
-job:
-  name: Get last active deployment
-  runs-on: ubuntu-latest
-  # Give the job access to deployments
-  permissions:
-    deployments: read
-  steps:
-    - name: Get last active deployment
-      uses: go-fjords/get-active-deployment-action@v1
-      id: get-deployment
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        environment: production
-        owner: your_github_username # Choose another owner
-        repo: your_repository_name # Choose another repository
-      nth: 2 # Get the second most recent deployment
+jobs:
+  get-deployment:
+    name: Get last active deployment
+    runs-on: ubuntu-latest
+    # Give the job access to deployments
+    permissions:
+      deployments: read
+    steps:
+      - name: Get last active deployment
+        uses: go-fjords/get-active-deployment-action@v1
+        id: get-deployment
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          environment: production
+          repository: my-org/my-repo
+          nth: 2 # Get the second most recent deployment
 ```
 
 ## Development

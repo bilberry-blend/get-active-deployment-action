@@ -19,16 +19,12 @@ inputs:
   environment:
     description: 'The environment of the deployment (e.g. production-my-app)'
     required: true
-  owner:
-    description: 'Owner of repository to check'
+  repository:
+    description: 'Repository to search'
     required: false
-    default: ${{ github.repo.owner }}
-  repo:
-    description: 'Repository to check'
-    required: false
-    default: ${{ github.repo.repo }}
+    default: ${{ github.repository }}
   nth:
-    description: 'Find the nth deployment'
+    description: 'Find the nth successful deployment'
     required: false
     default: 1
 

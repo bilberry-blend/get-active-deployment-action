@@ -22,10 +22,8 @@ interface Deployments {
 }
 
 export interface DeploymentsGraphQLResponse {
-  fetchDeployments: {
-    repository: {
-      deployments: Deployments
-    }
+  repository: {
+    deployments: Deployments
   }
 }
 
@@ -82,8 +80,7 @@ export async function fetchDeployments(
     }
   )
 
-  // Return the deployments
-  return data.fetchDeployments.repository.deployments
+  return data.repository.deployments
 }
 
 /**
@@ -119,7 +116,7 @@ export async function fetchDeploymentStatus(
       cursor
     )
     for (const deployment of deployments.nodes.filter(
-      d => d.state === 'ACTIVE'
+      d => d.state === 'ACTIVE' || d.state === 'INACTIVE'
     )) {
       if (found === nth) {
         break

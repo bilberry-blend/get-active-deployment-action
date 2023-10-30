@@ -29784,8 +29784,7 @@ async function fetchDeployments(octokit, context, environment, first = 20, curso
         owner: context.owner,
         repo: context.repo
     });
-    // Return the deployments
-    return data.fetchDeployments.repository.deployments;
+    return data.repository.deployments;
 }
 exports.fetchDeployments = fetchDeployments;
 /**
@@ -29808,7 +29807,7 @@ async function fetchDeploymentStatus(octokit, context, environment, nth) {
             await new Promise(resolve => setTimeout(resolve, 100)); // Polite rate limiting
         }
         const deployments = await fetchDeployments(octokit, context, environment, 20, cursor);
-        for (const deployment of deployments.nodes.filter(d => d.state === 'ACTIVE')) {
+        for (const deployment of deployments.nodes.filter(d => d.state === 'ACTIVE' || d.state === 'INACTIVE')) {
             if (found === nth) {
                 break;
             }
@@ -29882,12 +29881,15 @@ async function run() {
     try {
         // Get some initial context and inputs necessary for the action
         const environment = core.getInput('environment', { required: true });
-        const token = core.getInput('github-token', { required: true });
-        const nth = core.getInput('nth', { required: true });
-        const owner = core.getInput('owner', { required: true });
-        const repo = core.getInput('repo', { required: true });
+        const token = core.getInput('github-token');
+        const nth = core.getInput('nth');
+        const repository = core.getInput('repository');
         const octokit = github.getOctokit(token);
         const nthInt = parseInt(nth, 10);
+        const [owner, repo] = repository.split('/');
+        if (repo === undefined) {
+            throw new Error('Invalid repository');
+        }
         const context = {
             owner,
             repo

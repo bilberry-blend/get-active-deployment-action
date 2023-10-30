@@ -34,19 +34,17 @@ describe('helpers.ts', () => {
     it('should fetch a list of deployments', async () => {
       octokitMock.graphql.mockImplementation(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1,
-                    state: 'ACTIVE'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1,
+                  state: 'ACTIVE'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -70,31 +68,29 @@ describe('helpers.ts', () => {
     it('should return id if active deployment on first page', async () => {
       octokitMock.graphql.mockImplementation(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1002,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 1000,
-                    state: 'ACTIVE'
-                  },
-                  {
-                    databaseId: 999,
-                    state: 'Foo'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1002,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 1000,
+                  state: 'ACTIVE'
+                },
+                {
+                  databaseId: 999,
+                  state: 'Foo'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -114,27 +110,25 @@ describe('helpers.ts', () => {
     it('should return null if no active deployments on first page and no more pages are available', async () => {
       octokitMock.graphql.mockImplementation(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1002,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 999,
-                    state: 'Foo'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1002,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 999,
+                  state: 'Foo'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -155,27 +149,25 @@ describe('helpers.ts', () => {
       // First page
       octokitMock.graphql.mockImplementationOnce(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1002,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 1000,
-                    state: 'Foo'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: true,
-                  endCursor: 'cursor'
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1002,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 1000,
+                  state: 'Foo'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: true,
+                endCursor: 'cursor'
               }
             }
           }
@@ -185,19 +177,17 @@ describe('helpers.ts', () => {
       // Second page
       octokitMock.graphql.mockImplementationOnce(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 999,
-                    state: 'ACTIVE'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 999,
+                  state: 'ACTIVE'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -227,27 +217,25 @@ describe('helpers.ts', () => {
       // First page
       octokitMock.graphql.mockImplementationOnce(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1002,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 1000,
-                    state: 'Foo'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: true,
-                  endCursor: 'cursor'
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1002,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 1000,
+                  state: 'Foo'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: true,
+                endCursor: 'cursor'
               }
             }
           }
@@ -257,19 +245,17 @@ describe('helpers.ts', () => {
       // Second page
       octokitMock.graphql.mockImplementationOnce(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 999,
-                    state: 'Foo'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 999,
+                  state: 'Foo'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -291,31 +277,29 @@ describe('helpers.ts', () => {
     it('should return id for second active deployment if nth is 2', async () => {
       octokitMock.graphql.mockImplementation(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1003,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1002,
-                    state: 'ACTIVE'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 1000,
-                    state: 'ACTIVE'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1003,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1002,
+                  state: 'ACTIVE'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 1000,
+                  state: 'INACTIVE'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -335,31 +319,29 @@ describe('helpers.ts', () => {
     it('should handle active number of deployments larger than nth', async () => {
       octokitMock.graphql.mockImplementation(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1003,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1002,
-                    state: 'ACTIVE'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 1000,
-                    state: 'ACTIVE'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1003,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1002,
+                  state: 'ACTIVE'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 1000,
+                  state: 'INACTIVE'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
@@ -380,31 +362,29 @@ describe('helpers.ts', () => {
       // First page
       octokitMock.graphql.mockImplementationOnce(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 1003,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 1002,
-                    state: 'ACTIVE'
-                  },
-                  {
-                    databaseId: 1001,
-                    state: 'foo'
-                  },
-                  {
-                    databaseId: 1000,
-                    state: 'ACTIVE'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: true,
-                  endCursor: 'cursor'
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 1003,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 1002,
+                  state: 'ACTIVE'
+                },
+                {
+                  databaseId: 1001,
+                  state: 'foo'
+                },
+                {
+                  databaseId: 1000,
+                  state: 'INACTIVE'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: true,
+                endCursor: 'cursor'
               }
             }
           }
@@ -414,23 +394,21 @@ describe('helpers.ts', () => {
       // Second page
       octokitMock.graphql.mockImplementationOnce(async () => {
         return Promise.resolve({
-          fetchDeployments: {
-            repository: {
-              deployments: {
-                nodes: [
-                  {
-                    databaseId: 999,
-                    state: 'Foo'
-                  },
-                  {
-                    databaseId: 998,
-                    state: 'ACTIVE'
-                  }
-                ],
-                pageInfo: {
-                  hasNextPage: false,
-                  endCursor: ''
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 999,
+                  state: 'Foo'
+                },
+                {
+                  databaseId: 998,
+                  state: 'INACTIVE'
                 }
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: ''
               }
             }
           }
