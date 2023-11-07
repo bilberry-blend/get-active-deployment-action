@@ -19,7 +19,7 @@ job:
     deployments: read
   steps:
     - name: Get last active deployment
-      uses: go-fjords/get-active-deployment-action@v1
+      uses: go-fjords/get-active-deployment-action@v0
       id: get-deployment
       with:
         environment: production
@@ -58,7 +58,7 @@ jobs:
       deployments: read
     steps:
       - name: Get last active deployment
-        uses: go-fjords/get-active-deployment-action@v1
+        uses: go-fjords/get-active-deployment-action@v0
         id: get-deployment
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

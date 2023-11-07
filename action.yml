@@ -1,10 +1,5 @@
 name: 'Get Last Active Deployment Action'
-description: |
-  Find the (nth) last active deployment for a given GitHub environment.
-  The action will complete with empty outputs if no active deployments
-  are found. The action is useful for instance when you want to find the
-  SHA of the previous deployment to an environment so you can compute
-  the diff or commit history between the two deployments.
+description: Find the (nth) last active deployment for a given GitHub environment.
 author: 'Adventure Tech AS'
 
 # Define your inputs here.
