@@ -1,13 +1,10 @@
-name: 'Turbo Monorepo Release Action'
+name: 'Get Last Active Deployment Action'
 description: |
-  Creates a GitHub release from a commit range.
-  Filters the commit range by two criteria:
-
-  1. The commits must match conventional commit format
-  2. The commits must trigger a turbo build for the workspace
-
-  Commit range is start (exclusive) to end (inclusive).
-  The first commit should be the commit preceding the first commit in the release.
+  Find the (nth) last active deployment for a given GitHub environment.
+  The action will complete with empty outputs if no active deployments
+  are found. The action is useful for instance when you want to find the
+  SHA of the previous deployment to an environment so you can compute
+  the diff or commit history between the two deployments.
 author: 'Adventure Tech AS'
 
 # Define your inputs here.
